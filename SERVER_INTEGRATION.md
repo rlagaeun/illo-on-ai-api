@@ -28,6 +28,22 @@ app.include_router(resume_analysis_router)
 
 ---
 
+## 필요 라이브러리
+
+현재 버전 기준
+
+```bash
+pip install fastapi uvicorn pydantic
+```
+
+또는
+
+```bash
+pip install -r requirements.txt
+```
+
+---
+
 ## 생성 API
 
 ### 1. 키워드 점수 분석
@@ -38,10 +54,11 @@ POST /api/v1/resume/{user_id}/{resume_id}/analyze/score
 
 설명
 
-- 사용자 ID 수신
-- 이력서 ID 수신
-- 포트폴리오 URL 수신
-- 4개 영역 점수 반환
+* 사용자 ID 수신
+* 이력서 ID 수신
+* 포트폴리오 URL 수신
+* 4개 영역 점수 반환
+* 종합 점수 반환
 
 ---
 
@@ -53,11 +70,11 @@ POST /api/v1/resume/{user_id}/{resume_id}/analyze/feedback
 
 설명
 
-- 사용자 ID 수신
-- 이력서 ID 수신
-- 포트폴리오 URL 수신
-- 피드백 ID 반환
-- 5개 평가영역 피드백 반환
+* 사용자 ID 수신
+* 이력서 ID 수신
+* 포트폴리오 URL 수신
+* 피드백 ID 반환
+* 5개 평가영역 피드백 반환
 
 ---
 
@@ -69,11 +86,25 @@ POST /api/v1/resume/{user_id}/{resume_id}/analyze/activities
 
 설명
 
-- 사용자 ID 수신
-- 이력서 ID 수신
-- 포트폴리오 URL 수신
-- 피드백 ID 반환
-- 추천활동 3개 반환
+* 사용자 ID 수신
+* 이력서 ID 수신
+* 포트폴리오 URL 수신
+* 피드백 ID 반환
+* 추천활동 3개 반환
+
+---
+
+### 4. 챗봇 테스트 API
+
+```http
+POST /api/v1/resume/chat
+```
+
+설명
+
+* 테스트용 챗봇 API
+* 하드코딩 정책 응답 반환
+* PUBLIC_DATA Intent 예시 확인 가능
 
 ---
 
@@ -93,8 +124,8 @@ POST /api/v1/resume/{user_id}/{resume_id}/analyze/activities
   "languages": [],
   "portfolios": [
     {
-      "portfolioName": "포트폴리오",
-      "url": "https://..."
+      "portfolioName": "포트폴리오 PDF",
+      "url": "https://s3-presigned-url..."
     }
   ],
   "coverLetter": {
@@ -110,10 +141,11 @@ POST /api/v1/resume/{user_id}/{resume_id}/analyze/activities
 
 현재 구현 내용
 
-- portfolio.url 수신
-- URL 존재 여부 확인
-- URL 형식 검증
-- 정상 수신 여부 반환
+* portfolio.url 수신
+* URL 존재 여부 확인
+* URL 형식 검증
+* 정상 URL / 비정상 URL 분리
+* 정상 수신 여부 반환
 
 응답 예시
 
@@ -123,12 +155,26 @@ POST /api/v1/resume/{user_id}/{resume_id}/analyze/activities
   "portfolio_count": 1,
   "portfolio_urls": [
     {
-      "portfolioName": "포트폴리오",
+      "portfolioName": "포트폴리오 PDF",
       "url": "https://..."
     }
   ]
 }
 ```
+
+### 참고
+
+현재는 URL 수신 및 검증만 수행합니다.
+
+추후 실제 분석 연결 시
+
+```text
+S3 Presigned URL 수신
+→ PDF 다운로드
+→ Claude 분석
+```
+
+방식으로 확장 예정입니다.
 
 ---
 
@@ -144,10 +190,11 @@ HARDCODED_SCORE
 
 반환 항목
 
-- 스킬
-- 경험
-- 포트폴리오
-- 직무적합성
+* 스킬
+* 경험
+* 포트폴리오
+* 직무적합성
+* 종합 점수
 
 ---
 
@@ -159,11 +206,11 @@ HARDCODED_FEEDBACK
 
 반환 항목
 
-- 직무 적합도
-- 경험·성과 구체성
-- 실무·기술 역량
-- 문서 완성도
-- 경험 일관성·차별성
+* 직무 적합도
+* 경험·성과 구체성
+* 실무·기술 역량
+* 문서 완성도
+* 경험 일관성·차별성
 
 ---
 
@@ -175,49 +222,9 @@ HARDCODED_ACTIVITIES
 
 반환 항목
 
-- 자격증
-- 프로젝트
-- 포트폴리오 개선
-
----
-
-## 추후 구현 예정
-
-현재 하드코딩 부분은 추후 실제 분석 로직으로 교체 예정
-
-### 점수 분석
-
-기존 프로젝트
-
-```text
-일로온-이력서키워드점수매칭
-```
-
-사용 예정 파일
-
-```text
-step01_extract_score_keywords.py
-step02_calculate_resume_score.py
-```
-
----
-
-### 피드백 분석
-
-기존 프로젝트
-
-```text
-resume-feedback-ai-server
-```
-
-사용 예정 파일
-
-```text
-step01_extract_evidence.py
-step02_evaluate_level.py
-step03_1_generate_feedback.py
-step03_2_generate_activities.py
-```
+* 자격증
+* 프로젝트
+* 포트폴리오 개선
 
 ---
 
